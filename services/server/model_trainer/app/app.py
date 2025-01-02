@@ -1,3 +1,7 @@
+from api.v1.api_models import ModelConfig, FitRequest, FitResponse, SetRequest
+from api.v1.api_models import ModelListResponse, PredictRequest
+from api.v1.api_models import PredictionResponse
+from copy import deepcopy
 import os
 import asyncio
 import logging
@@ -10,8 +14,6 @@ import re
 import joblib
 import sys
 sys.path.append('../')
-from copy import deepcopy
-from api.v1.api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse, SetRequest, PredictRequest, PredictionResponse
 
 
 models_lock = asyncio.Lock()
@@ -43,35 +45,10 @@ logger = logging.getLogger(__name__)
 executor = ProcessPoolExecutor(max_workers=MAX_WORKERS)
 
 
-def transform(text: str):
-    def clean_text(text):
-        text = text.lower()
-        text = re.sub(r'http\S+', '', text)
-        text = re.sub(r'www\S+', '', text)
-        text = re.sub(r"\'s", " ", text)
-        text = re.sub('\W', ' ', text)
-        text = re.sub('\s+', ' ', text)
-        text = text.strip(' ')
-        return text
-
-    text = clean_text(text)
-    text = " ".join(
-        filter(
-            lambda word: word not in ru_stopwords,
-            map(lambda word: morph.parse(word)[0].normal_form, word_tokenize(text))
-        )
-    )
-
-    logger.info(text)
-
-    return text
-
-
 # fix: other models should not requre any preprocessing, implement in pipeline
 def predict(model, X):
     logger.info(f'{current_model_id}')
     logger.info(X)
-    # X = vectorizer.transform(list(map(lambda comment: transform(comment), X)))
     logger.info(X)
     return model.predict(X)
 
@@ -79,7 +56,6 @@ def predict(model, X):
 def fit_model(model, X, y):
     print(f'[{os.getpid()}] fitting')
 
-    # X = vectorizer.transform(list(map(lambda comment: transform(comment), X)))
     model.fit(X, y)
 
     print(f'[{os.getpid()}] fitted')
@@ -90,34 +66,47 @@ async def fit_impl(request: FitRequest):
     global workers
 
     print(f'[{os.getpid()}] fit_request')
-    model_id = request.config.id # specify new id for user model
-    model_type = request.config.ml_model_type # specify model type to for training
+    # specify new id for user model
+    model_id = request.config.id
+    # specify model type to for training
+    model_type = request.config.ml_model_type
     async with models_lock:
         if model_type not in models:
-            raise HTTPException(status_code=400, detail=f'Type {model_type} does not exist')
+            raise HTTPException(status_code=400,
+                                detail=f'Type {model_type} does not exist')
 
         if model_id in models:
-            raise HTTPException(status_code=400, detail=f'Model with id #{model_id} already exists')
+            raise HTTPException(
+                status_code=400,
+                detail=f'Model with id #{model_id} already exists'
+            )
 
         if workers == MAX_WORKERS:
-            raise HTTPException(status_code=400, detail=f'Can not fit more than {MAX_WORKERS} models at once')
+            raise HTTPException(
+                status_code=400,
+                detail=f'Can not fit more than {MAX_WORKERS} models at once'
+            )
 
         workers += 1
 
-
     try:
         model = deepcopy(loaded_models[model_type]['model'])
-        
+
         start = time.time()
 
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(executor, fit_model, model, request.X, request.y)
+        result = await loop.run_in_executor(
+            executor, fit_model, model, request.X, request.y
+        )
         model = result
 
         result = time.time() - start
         print(f'[{os.getpid()}] {result:.2f}s')
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f'Fit failed with model #{model_id}: {e}')
+        raise HTTPException(
+            status_code=400,
+            detail=f'Fit failed with model #{model_id}: {e}'
+        )
 
     async with models_lock:
         workers -= 1
@@ -135,7 +124,10 @@ async def set_impl(request: SetRequest):
     model_id = request.id
     async with models_lock:
         if model_id not in loaded_models:
-            raise HTTPException(status_code=400, detail=f'Model #{model_id} does not exist')
+            raise HTTPException(
+                status_code=400,
+                detail=f'Model #{model_id} does not exist'
+            )
 
         current_model_id = model_id
     return 200, {'message': f'Current model is #{model_id}'}
@@ -159,7 +151,10 @@ async def predict_impl(request: PredictRequest):
             y_pred = predict(model, request.X)
             return 200, {'predictions': y_pred.tolist()}
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f'Predict failed with model #{current_model_id}: {e}')
+            raise HTTPException(
+                status_code=400,
+                detail=f'Predict failed with model #{current_model_id}: {e}'
+            )
 
 
 async def list_models_impl():

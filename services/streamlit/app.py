@@ -76,13 +76,17 @@ if text:
 if st.button("получить список моделей"):
     response = requests.get(url + models_api)
     if response.status_code != 200:
-        st.write(f'Ошибка получения статуса доступных моделей: {response.json()}')
+        st.write(
+            f'Ошибка получения статуса доступных моделей: {response.json()}'
+        )
     else:
         st.write(f'Result: {response.json()}')
 
 
 st.subheader("Основная модель")
-st.write('В качестве основной модели вы решили выбрать TF-IDF + Logistic Regression')
+st.write(
+    'В качестве основной модели вы решили выбрать TF-IDF + Logistic Regression'
+)
 if st.button(f"установить модель {main_model_id}"):
     payload = {
         "id": main_model_id
@@ -116,7 +120,9 @@ st.image(image, caption='Model review')
 st.subheader("Обучение модели на новых данных")
 uploaded_file = st.file_uploader("Выберите CSV-файл", type=["csv"])
 if uploaded_file is not None:
-    st.text('Прикрепите csv файл с данными, формат - две колонки: comment и toxic')
+    st.text(
+        'Прикрепите csv файл с данными, формат - две колонки: comment и toxic'
+    )
     data = load_data(uploaded_file)
     data.head(5)
 
@@ -125,9 +131,13 @@ if uploaded_file is not None:
     elif 'toxic' not in data.columns.values:
         st.text('Датасет должен содержать колонку toxic')
     else:
-        model_type = st.selectbox('Выберите модель', ['Ngrams_NaiveByas', 'tfidf_logreg'])
+        model_type = st.selectbox(
+            'Выберите модель', ['Ngrams_NaiveByas', 'tfidf_logreg']
+        )
         model_id = st.text_input("Укажите название для вашей модели")
-        params = st.text_input('Укажите гиперпараметры в python-формате {"<имя параметра>": значение}', '{}')
+        params = st.text_input(
+            'Гиперпараметры в python-формате {"<параметр>": значение}', '{}'
+        )
         params = json.loads(params)
         params = dict(map(lambda x: (f'model__{x[0]}', x[1]), params.items()))
         if st.button("обучить модель"):

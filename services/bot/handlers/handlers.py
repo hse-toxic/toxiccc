@@ -127,8 +127,14 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     button1 = InlineKeyboardButton("ℹ️ Help", callback_data="help_button")
-    button2 = InlineKeyboardButton(f'1️⃣ Select "{Models.NAIVEBYAS.value}" model', callback_data=Models.NAIVEBYAS.value)
-    button3 = InlineKeyboardButton(f'2️⃣ Select "{Models.TFIDF_LOGREG.value}" model', callback_data=Models.TFIDF_LOGREG.value)
+    button2 = InlineKeyboardButton(
+        f'1️⃣ Select "{Models.NAIVEBYAS.value}" model',
+        callback_data=Models.NAIVEBYAS.value
+    )
+    button3 = InlineKeyboardButton(
+        f'2️⃣ Select "{Models.TFIDF_LOGREG.value}" model',
+        callback_data=Models.TFIDF_LOGREG.value
+    )
     keyboard = [[button1], [button2], [button3]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 

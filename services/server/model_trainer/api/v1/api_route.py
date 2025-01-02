@@ -1,21 +1,26 @@
+from app.app import fit_impl, set_impl, get_status_impl, predict_impl
+from app.app import list_models_impl
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from typing import List
 
-from .api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse, SetRequest, SetResponse, PredictRequest, PredictionResponse, StatusResponse
+from .api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse
+from .api_models import SetRequest, SetResponse, PredictRequest
+from .api_models import PredictionResponse, StatusResponse
 
 import sys
 sys.path.append('../../')
-from app.app import fit_impl, set_impl, get_status_impl, predict_impl, list_models_impl
 
 
 models = {}
 
 router = APIRouter()
 
+
 # API endpoints
-@router.post("/fit", status_code=HTTPStatus.CREATED, response_model=List[FitResponse])
+@router.post("/fit", status_code=HTTPStatus.CREATED,
+             response_model=List[FitResponse])
 async def fit(request: List[FitRequest]):
     # Реализуйте логику обучения и сохранения модели.
     # Обратите внимание на формат входных данных.
