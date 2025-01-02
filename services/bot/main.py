@@ -18,7 +18,6 @@ logging.basicConfig(
 def main():
     load_dotenv()
     TOKEN = os.getenv('TOKEN')
-    print(TOKEN)
 
     application = ApplicationBuilder().token(TOKEN).build()
 
