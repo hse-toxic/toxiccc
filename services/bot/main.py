@@ -32,15 +32,14 @@ def main():
     caps_handler = CommandHandler('caps', handlers.caps)
 
     model_handler = CommandHandler('model', handlers.model)
+    model_filter = f"^({Models.GLOVE_LOGREG.value}|{Models.NAIVEBYAS.value}|{Models.WORD2VEC_LOGREG.value})$"
     conv_handler = ConversationHandler(
         entry_points=[model_handler],
         states={
             0: [
                 MessageHandler(
                     filters.Regex(
-                        f"^({Models.GLOVE_LOGREG.value}|\
-                        {Models.NAIVEBYAS.value}\
-                        {Models.WORD2VEC_LOGREG.value})$"
+                        model_filter
                     ),
                     handlers.model_answer),
                 MessageHandler(None, handlers.unknown_model)

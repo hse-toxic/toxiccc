@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from models.model import predict
+from models.model import predict, set_model
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InlineQueryResultArticle, InputTextMessageContent
@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class Models(str, Enum):
-    GLOVE_LOGREG = 'Glove+LogReg'
-    NAIVEBYAS = 'Ngrams+NaiveByas'
-    WORD2VEC_LOGREG = 'Word2Vec+LogReg'
+    GLOVE_LOGREG = 'glove_logreg'
+    NAIVEBYAS = 'Ngrams_NaiveByas'
+    WORD2VEC_LOGREG = 'word2vec_logreg'
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
@@ -25,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    result = predict(update.message.text)
+    result = await predict(update.message.text)
     if result == 1.0:
         msg = 'Toxic'
     else:
@@ -49,7 +50,7 @@ async def inline_echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not query:
         return
 
-    result = predict(query)
+    result = await predict(query)
     msg = f'Message "{query}" is {"toxic" if result == 1.0 else "non-toxic"}'
 
     results = []
@@ -87,15 +88,21 @@ async def model(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def model_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     user_model = update.message.text
-    if user_model == Models.SVC:
-        logger.info(f'User {user} set {Models.SVC}')
-    else:
-        logger.info(f'User {user} set {Models.LOGISTIC}')
+    logger.info(f'User {user} trying to set {user_model}')
 
-    await update.message.reply_text(
-        f'Current model is set to {user_model}',
-        reply_markup=ReplyKeyboardRemove()
-    )
+    status_code, response = await set_model(user_model)
+    logger.info(f'{status_code}, {response}')
+
+    if status_code != 200:
+        await update.message.reply_text(
+            f'Error: {response}',
+            reply_markup=ReplyKeyboardRemove()
+        )
+    else:
+        await update.message.reply_text(
+            f'Current model is set to {user_model}',
+            reply_markup=ReplyKeyboardRemove()
+        )
 
     return ConversationHandler.END
 
