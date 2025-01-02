@@ -7,9 +7,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from PIL import Image
 import json
+import os
 
 
-url = 'http://server:8000/api/v1/models/'
+addr = os.getenv('SERVER_ADDRESS')
+url = f'http://{addr}/api/v1/models/'
 fit_api = 'fit'
 set_api = 'set'
 get_status_api = 'get_status'
@@ -35,7 +37,7 @@ if response.status_code != 200:
     st.write(f'Ошибка получения статуса доступных моделей: {response.json()}')
 else:
     models_list = list(map(lambda x: x['id'], response.json()[0]['models']))
-    model_id = st.selectbox('Выберите модель', models_list)
+    model_id = st.selectbox('Тип модели', models_list)
 
     if st.button("установить модель"):
         payload = {
@@ -123,9 +125,9 @@ if uploaded_file is not None:
     elif 'toxic' not in data.columns.values:
         st.text('Датасет должен содержать колонку toxic')
     else:
-        model_type = st.selectbox('Выберите модель', ['glove_logreg', 'Ngrams_NaiveByas', 'word2vec_logreg'])
+        model_type = st.selectbox('Выберите модель', ['Ngrams_NaiveByas', 'tfidf_logreg'])
         model_id = st.text_input("Укажите название для вашей модели")
-        params = st.text_input('Укажите гиперпараметры в python-формате {"<имя параметра>": значение}', '')
+        params = st.text_input('Укажите гиперпараметры в python-формате {"<имя параметра>": значение}', '{}')
         params = json.loads(params)
         params = dict(map(lambda x: (f'model__{x[0]}', x[1]), params.items()))
         if st.button("обучить модель"):

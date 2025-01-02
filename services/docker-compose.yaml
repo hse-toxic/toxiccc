@@ -7,6 +7,7 @@ services:
       context: ./server
     ports: 
       - "8080:8000"
+      - "8081:8000"
     container_name: server
     networks:
       toxic_network:
@@ -18,7 +19,7 @@ services:
       context: ./bot
     container_name: bot
     environment:
-      SERVER_ADDRESS: 'server:8080'
+      SERVER_ADDRESS: 'server:8000'
       TOKEN: ${BOT_TOKEN}
     networks:
       toxic_network:
@@ -27,6 +28,19 @@ services:
       - server
     profiles:
     - tg
+  
+  streamlit:
+    build:
+      dockerfile: Dockerfile
+      context: ./streamlit
+    container_name: streamlit
+    environment:
+      SERVER_ADDRESS: 'server:8000'
+    networks:
+      toxic_network:
+      default:
+    depends_on:
+      - server
 
 networks:
   default:

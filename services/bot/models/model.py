@@ -6,7 +6,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-addr = os.getenv('SERVER_ADDR')
+addr = os.getenv('SERVER_ADDRESS')
 url = f'http://{addr}/api/v1/models/'
 predict_api = 'predict'
 set_api = 'set'
