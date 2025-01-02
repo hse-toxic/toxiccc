@@ -1,0 +1,380 @@
+components:
+  schemas:
+    FitRequest:
+      properties:
+        X:
+          items:
+            items:
+              type: number
+            type: array
+          title: X
+          type: array
+        config:
+          $ref: '#/components/schemas/ModelConfig'
+        y:
+          items:
+            type: number
+          title: Y
+          type: array
+      required:
+      - X
+      - y
+      - config
+      title: FitRequest
+      type: object
+    FitResponse:
+      properties:
+        message:
+          title: Message
+          type: string
+      required:
+      - message
+      title: FitResponse
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    LoadRequest:
+      properties:
+        id:
+          title: Id
+          type: string
+      required:
+      - id
+      title: LoadRequest
+      type: object
+    LoadResponse:
+      properties:
+        message:
+          title: Message
+          type: string
+      required:
+      - message
+      title: LoadResponse
+      type: object
+    ModelConfig:
+      properties:
+        hyperparameters:
+          title: Hyperparameters
+          type: object
+        id:
+          title: Id
+          type: string
+        ml_model_type:
+          enum:
+          - linear
+          - logistic
+          title: Ml Model Type
+          type: string
+      required:
+      - id
+      - ml_model_type
+      - hyperparameters
+      title: ModelConfig
+      type: object
+    ModelListResponse:
+      properties:
+        models:
+          items:
+            type: object
+          title: Models
+          type: array
+      required:
+      - models
+      title: ModelListResponse
+      type: object
+    PredictRequest:
+      properties:
+        X:
+          items:
+            items:
+              type: number
+            type: array
+          title: X
+          type: array
+        id:
+          title: Id
+          type: string
+      required:
+      - id
+      - X
+      title: PredictRequest
+      type: object
+    PredictionResponse:
+      properties:
+        predictions:
+          additionalProperties:
+            items:
+              type: number
+            type: array
+          title: Predictions
+          type: object
+      required:
+      - predictions
+      title: PredictionResponse
+      type: object
+    RemoveResponse:
+      properties:
+        message:
+          title: Message
+          type: string
+      required:
+      - message
+      title: RemoveResponse
+      type: object
+    UnloadRequest:
+      properties:
+        id:
+          title: Id
+          type: string
+      required:
+      - id
+      title: UnloadRequest
+      type: object
+    UnloadResponse:
+      properties:
+        message:
+          title: Message
+          type: string
+      required:
+      - message
+      title: UnloadResponse
+      type: object
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+    api__v1__api_models__StatusResponse:
+      properties:
+        status:
+          title: Status
+          type: string
+      required:
+      - status
+      title: StatusResponse
+      type: object
+    main__StatusResponse:
+      examples:
+      - status: App healthy
+      properties:
+        status:
+          title: Status
+          type: string
+      required:
+      - status
+      title: StatusResponse
+      type: object
+info:
+  title: model_trainer
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /:
+    get:
+      operationId: root__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/main__StatusResponse'
+          description: Successful Response
+      summary: Root
+  /api/v1/models/fit:
+    post:
+      operationId: fit_api_v1_models_fit_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/FitRequest'
+              title: Request
+              type: array
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FitResponse'
+                title: Response Fit Api V1 Models Fit Post
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Fit
+  /api/v1/models/get_status:
+    get:
+      operationId: get_status_api_v1_models_get_status_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/api__v1__api_models__StatusResponse'
+                title: Response Get Status Api V1 Models Get Status Get
+                type: array
+          description: Successful Response
+      summary: Get Status
+  /api/v1/models/list_models:
+    get:
+      operationId: list_models_api_v1_models_list_models_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelListResponse'
+          description: Successful Response
+      summary: List Models
+  /api/v1/models/load:
+    post:
+      operationId: load_api_v1_models_load_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoadRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/LoadResponse'
+                title: Response Load Api V1 Models Load Post
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Load
+  /api/v1/models/predict:
+    post:
+      operationId: predict_api_v1_models_predict_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/PredictRequest'
+              title: Request
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PredictionResponse'
+                title: Response Predict Api V1 Models Predict Post
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Predict
+  /api/v1/models/remove/{model_id}:
+    delete:
+      operationId: remove_api_v1_models_remove__model_id__delete
+      parameters:
+      - in: path
+        name: model_id
+        required: true
+        schema:
+          title: Model Id
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RemoveResponse'
+                title: Response Remove Api V1 Models Remove  Model Id  Delete
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Remove
+  /api/v1/models/remove_all:
+    delete:
+      operationId: remove_all_api_v1_models_remove_all_delete
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RemoveResponse'
+                title: Response Remove All Api V1 Models Remove All Delete
+                type: array
+          description: Successful Response
+      summary: Remove All
+  /api/v1/models/unload:
+    post:
+      operationId: unload_api_v1_models_unload_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnloadRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/UnloadResponse'
+                title: Response Unload Api V1 Models Unload Post
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Unload

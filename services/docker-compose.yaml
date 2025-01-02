@@ -1,0 +1,50 @@
+version: "3.4"
+
+services:
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: ./server
+    ports: 
+      - "8080:8000"
+      - "8081:8000"
+    container_name: server
+    networks:
+      toxic_network:
+      default:
+
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: ./bot
+    container_name: bot
+    environment:
+      SERVER_ADDRESS: 'server:8000'
+      TOKEN: ${BOT_TOKEN}
+    networks:
+      toxic_network:
+      default:
+    depends_on:
+      - server
+    profiles:
+    - tg
+  
+  streamlit:
+    build:
+      dockerfile: Dockerfile
+      context: ./streamlit
+    container_name: streamlit
+    environment:
+      SERVER_ADDRESS: 'server:8000'
+    networks:
+      toxic_network:
+      default:
+    depends_on:
+      - server
+
+networks:
+  default:
+    driver: bridge
+  toxic_network:
+    driver: bridge
+    internal: true

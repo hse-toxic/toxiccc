@@ -1,2 +1,7 @@
 */data/
 data/
+*/venv/
+.env
+venv/
+__pycache__
+*.token
