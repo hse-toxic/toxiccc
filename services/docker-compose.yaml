@@ -5,12 +5,9 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./server
-    # image: server:v1.0.0
-    #
     ports: 
       - "8080:8000"
     container_name: server
-    # network_mode: host
     networks:
       toxic_network:
       default:
@@ -19,17 +16,17 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./bot
-    # image: bot:v1.0.0
     container_name: bot
     environment:
       SERVER_ADDRESS: 'server:8080'
       TOKEN: ${BOT_TOKEN}
-    # network_mode: host
     networks:
       toxic_network:
       default:
     depends_on:
       - server
+    profiles:
+    - tg
 
 networks:
   default:

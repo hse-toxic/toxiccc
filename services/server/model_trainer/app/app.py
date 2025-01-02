@@ -6,16 +6,11 @@ from fastapi import HTTPException
 import time
 from concurrent.futures import ProcessPoolExecutor
 from dotenv import load_dotenv
-import dill
 import re
-import nltk
-import pymorphy3
-from nltk import word_tokenize
-from nltk.corpus import stopwords
 import joblib
-import pandas as pd
 import sys
 sys.path.append('../')
+from copy import deepcopy
 from api.v1.api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse, SetRequest, PredictRequest, PredictionResponse
 
 
@@ -27,7 +22,7 @@ models = {}
 
 # load models
 def load_models():
-    for model_id in ['Ngrams_NaiveByas']:
+    for model_id in ['Ngrams_NaiveByas', 'tfidf_logreg']:
         with open(f"models/{model_id}.joblib", 'rb') as file:
             model = joblib.load(file)
             loaded_models[model_id] = {}
@@ -99,7 +94,7 @@ async def fit_impl(request: FitRequest):
     model_type = request.config.ml_model_type # specify model type to for training
     async with models_lock:
         if model_type not in models:
-            raise HTTPException(status_code=400, detail=f'Type {model_id} does not exist')
+            raise HTTPException(status_code=400, detail=f'Type {model_type} does not exist')
 
         if model_id in models:
             raise HTTPException(status_code=400, detail=f'Model with id #{model_id} already exists')
@@ -111,6 +106,8 @@ async def fit_impl(request: FitRequest):
 
 
     try:
+        model = deepcopy(loaded_models[model_type]['model'])
+        
         start = time.time()
 
         loop = asyncio.get_event_loop()

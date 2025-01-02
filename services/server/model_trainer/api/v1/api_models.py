@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class ModelConfig(BaseModel):
     id: str
-    ml_model_type: Literal["glove_logreg", "Ngrams_NaiveByas", "word2vec_logreg"]
+    ml_model_type: Literal["Ngrams_NaiveByas", "tfidf_logreg"]
     hyperparameters: Dict[str, Any]
 
 

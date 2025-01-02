@@ -7,7 +7,7 @@ from .api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse,
 
 import sys
 sys.path.append('../../')
-from services.services import fit_impl, set_impl, get_status_impl, predict_impl, list_models_impl
+from app.app import fit_impl, set_impl, get_status_impl, predict_impl, list_models_impl
 
 
 models = {}

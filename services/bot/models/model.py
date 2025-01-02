@@ -1,11 +1,13 @@
 from aiohttp import ClientSession, web
 import logging
+import os
 
 
 logger = logging.getLogger(__name__)
 
 
-url = 'http://server:8000/api/v1/models/'
+addr = os.getenv('SERVER_ADDR')
+url = f'http://{addr}/api/v1/models/'
 predict_api = 'predict'
 set_api = 'set'
 
