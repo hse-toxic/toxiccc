@@ -13,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class Models(str, Enum):
-    GLOVE_LOGREG = 'glove_logreg'
     NAIVEBYAS = 'Ngrams_NaiveByas'
-    WORD2VEC_LOGREG = 'word2vec_logreg'
+    TFIDF_LOGREG = 'tfidf_logreg'
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -72,7 +71,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def model(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply_keyboard = [[Models.GLOVE_LOGREG, Models.NAIVEBYAS, Models.WORD2VEC_LOGREG]]
+    reply_keyboard = [[Models.NAIVEBYAS, Models.TFIDF_LOGREG]]
     await update.message.reply_text(
         "Choose model",
         reply_markup=ReplyKeyboardMarkup(
@@ -127,12 +126,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    button1 = InlineKeyboardButton("ℹ️ Help", callback_data="button1")
-    button2 = InlineKeyboardButton("🔥 Button 2", callback_data="button2")
-    button3 = InlineKeyboardButton("👋 Button 3", callback_data="button3")
-    button4 = InlineKeyboardButton("🎮 Button 4", callback_data="button4")
-    # keyboard = [[button1, button2], [button3, button4]]
-    keyboard = [[button1], [button2], [button3], [button4]]
+    button1 = InlineKeyboardButton("ℹ️ Help", callback_data="help_button")
+    button2 = InlineKeyboardButton(f'1️⃣ Select "{Models.NAIVEBYAS.value}" model', callback_data=Models.NAIVEBYAS.value)
+    button3 = InlineKeyboardButton(f'2️⃣ Select "{Models.TFIDF_LOGREG.value}" model', callback_data=Models.TFIDF_LOGREG.value)
+    keyboard = [[button1], [button2], [button3]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
@@ -146,13 +143,19 @@ async def menu_button_callback(update: Update,
     query = update.callback_query
     button = query.data
 
-    if button == "button1":
+    if button == "help_button":
         await query.edit_message_text(
-            text="Available commands: /menu /help /model"
+            text="Available commands: /menu /model"
         )
-    elif button == "button2":
-        await query.edit_message_text(text="You clicked button 2!")
-    elif button == "button3":
-        await query.edit_message_text(text="You clicked button 3!")
-    elif button == "button4":
-        await query.edit_message_text(text="You clicked button 4!")
+    else:
+        status_code, response = await set_model(button)
+        logger.info(f'{status_code}, {response}')
+
+        if status_code != 200:
+            await query.edit_message_text(
+                text=f'Error: {response}'
+            )
+        else:
+            await query.edit_message_text(
+                text=f'Current model is set to {button}'
+            )

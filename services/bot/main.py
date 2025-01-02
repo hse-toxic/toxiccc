@@ -32,7 +32,7 @@ def main():
     caps_handler = CommandHandler('caps', handlers.caps)
 
     model_handler = CommandHandler('model', handlers.model)
-    model_filter = f"^({Models.GLOVE_LOGREG.value}|{Models.NAIVEBYAS.value}|{Models.WORD2VEC_LOGREG.value})$"
+    model_filter = f"^({Models.NAIVEBYAS.value}|{Models.TFIDF_LOGREG.value})$"
     conv_handler = ConversationHandler(
         entry_points=[model_handler],
         states={
