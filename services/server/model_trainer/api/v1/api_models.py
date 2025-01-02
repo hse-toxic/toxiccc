@@ -31,12 +31,11 @@ class SetResponse(BaseModel):
 
 
 class PredictRequest(BaseModel):
-    id: str
     X: List[str]
 
 
 class PredictionResponse(BaseModel):
-    predictions: Dict[Any, List[float]]
+    predictions: List[float]
 
 
 class UnloadRequest(BaseModel):

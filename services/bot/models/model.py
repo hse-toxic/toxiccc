@@ -1,46 +1,30 @@
-from joblib import load
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.linear_model import LogisticRegression
-import nltk
-import pymorphy3
-from nltk import word_tokenize
-from nltk.corpus import stopwords
-import re
+from aiohttp import ClientSession, web
+import logging
 
 
-nltk.download('stopwords')
-nltk.download('punkt_tab')
-morph = pymorphy3.MorphAnalyzer()
-ru_stopwords = stopwords.words("russian") + ['это', 'её']
-
-model = load('models/model.joblib')
-vectorizer = load('models/vectorizer.joblib')
+logger = logging.getLogger(__name__)
 
 
-def transform(text: str):
-    def clean_text(text):
-        text = text.lower()
-        text = re.sub(r'http\S+', '', text)
-        text = re.sub(r'www\S+', '', text)
-        text = re.sub(r"\'s", " ", text)
-        # text = re.sub('\W', ' ', text)
-        # text = re.sub('\s+', ' ', text)
-        # text = text.strip(' ')
-        return text
-
-    text = clean_text(text)
-    text = " ".join(
-        filter(
-            lambda word: word not in ru_stopwords,
-            map(
-                lambda word: morph.parse(word)[0].normal_form,
-                word_tokenize(text)
-            )
-        )
-    )
-
-    return vectorizer.transform([text])
+url = 'http://0.0.0.0:8000/api/v1/model/'
+predict_api = 'predict'
 
 
-def predict(text: str):
-    return model.predict(transform(text))[0]
+async def async_predict_impl(payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url + fit_api, json=payload) as response:
+            return await response.json()
+
+
+async def predict(text: str):
+    payload = [
+        {
+            "X": [
+                text
+            ]
+        }
+    ]
+    response = await async_predict_impl(payload)
+    if 'predictions' not in response or len(response['predictions']) != 1:
+        logger.info(f'prediction failed: {response}')
+        return 0.0
+    return response['predictions'][0]

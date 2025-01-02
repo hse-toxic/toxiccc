@@ -37,11 +37,11 @@ async def get_status():
     return JSONResponse(content=[result[1]], status_code=result[0])
 
 
-@router.post("/predict", response_model=List[PredictionResponse])
+@router.post("/predict", response_model=PredictionResponse)
 async def predict(request: List[PredictRequest]):
     # Реализуйте инференс одной из загруженных моделей
     result = await predict_impl(request[0])
-    return JSONResponse(content=[result[1]], status_code=result[0])
+    return JSONResponse(content=result[1], status_code=result[0])
 
 
 @router.get("/models", response_model=List[ModelListResponse])

@@ -12,45 +12,30 @@ import nltk
 import pymorphy3
 from nltk import word_tokenize
 from nltk.corpus import stopwords
-from joblib import load
+import joblib
 import pandas as pd
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
-
-
 import sys
 sys.path.append('../')
 from api.v1.api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse, SetRequest, PredictRequest, PredictionResponse
 
 
-nltk.download('stopwords')
-nltk.download('punkt_tab')
-morph = pymorphy3.MorphAnalyzer()
-ru_stopwords = stopwords.words("russian") + ['это', 'её']
-vectorizer = load('models/vectorizer.joblib')
-
 models_lock = asyncio.Lock()
+workers = 0
 loaded_models = {}
 models = {}
-workers = 0
+
 
 # load models
-# for model_id in ['glove_logreg', 'Ngrams_NaiveByas', 'word2vec_logreg']:
-for model_id in ['Ngrams_NaiveByas']:
-    with open(f"models/{model_id}.pkl", 'rb') as file:
-        model = dill.load(file)
-        loaded_models[model_id] = {}
-        loaded_models[model_id]['model'] = model
-        loaded_models[model_id]['type'] = model_id
-        models[model_id] = model_id
+def load_models():
+    for model_id in ['Ngrams_NaiveByas']:
+        with open(f"models/{model_id}.joblib", 'rb') as file:
+            model = joblib.load(file)
+            loaded_models[model_id] = {}
+            loaded_models[model_id]['model'] = model
+            loaded_models[model_id]['type'] = model_id
+            models[model_id] = model_id
 
-# load base model
-# model = load('models/base.joblib')
-# loaded_models['base'] = {}
-# loaded_models['base']['model'] = model
-# loaded_models['base']['type'] = 'logreg'
-# models['base'] = model_id
+
 current_model_id = 'Ngrams_NaiveByas'
 
 load_dotenv()
@@ -121,17 +106,6 @@ async def fit_impl(request: FitRequest):
 
         if workers == MAX_WORKERS:
             raise HTTPException(status_code=400, detail=f'Can not fit more than {MAX_WORKERS} models at once')
-
-        try:
-            with open(f"models/{model_type}.pkl", 'rb') as file:
-                model = pickle.load(file)
-                loaded_models[model_id] = {}
-                loaded_models[model_id]['model'] = model
-                loaded_models[model_id]['type'] = model_type
-                models[model_id] = model_id
-
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f'Fit failed with model #{model_id}: {e}')
 
         workers += 1
 
