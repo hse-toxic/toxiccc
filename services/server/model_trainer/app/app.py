@@ -1,5 +1,6 @@
 from api.v1.api_models import ModelConfig, FitRequest, FitResponse, SetRequest
 from api.v1.api_models import ModelListResponse, PredictRequest
+from api.v1.api_models import TransformRequest
 from api.v1.api_models import PredictionResponse
 from copy import deepcopy
 import os
@@ -13,6 +14,8 @@ from dotenv import load_dotenv
 import re
 import joblib
 import sys
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
 sys.path.append('../')
 
 
@@ -20,6 +23,7 @@ models_lock = asyncio.Lock()
 workers = 0
 loaded_models = {}
 models = {}
+transform_models = {}
 
 
 # load models
@@ -31,6 +35,16 @@ def load_models():
             loaded_models[model_id]['model'] = model
             loaded_models[model_id]['type'] = model_id
             models[model_id] = model_id
+
+    # load seq2seq model and tokenizer
+    base_model_name = 'ai-forever/ruT5-base'
+    model_name = 's-nlp/ruT5-base-detox'
+    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained('models/hse-ruT5-base-detox', local_files_only=True)
+    transform_models['tokenizer'] = tokenizer
+    transform_models['model'] = model
+
 
 
 current_model_id = 'Ngrams_NaiveByas'
@@ -163,3 +177,24 @@ async def list_models_impl():
         for model_id, model_type in models.items():
             models_list.append({'id': model_id, 'type': model_type})
         return 200, {'models': models_list}
+
+
+async def transform_impl(request: TransformRequest):
+    async with models_lock:
+        tokenizer = transform_models['tokenizer']
+        model = transform_models['model']
+        encodings = tokenizer(
+            request.X,
+            padding='max_length',
+            truncation=True,
+            max_length=256,
+            return_tensors='pt'
+        )
+        output_ids = model.generate(
+            input_ids=encodings['input_ids'],
+            attention_mask=encodings['attention_mask'],
+            max_length=256,
+            num_return_sequences=1
+        )
+        output_text = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+    return 200, {'X': output_text}

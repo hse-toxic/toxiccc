@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from models.model import predict, set_model
+from models.model import predict, set_model, transform
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InlineQueryResultArticle, InputTextMessageContent
@@ -41,6 +41,15 @@ async def caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=msg_caps
+    )
+
+
+async def detox(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    result = await transform(update.message.text)
+    msg = result
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f'{msg}'
     )
 
 

@@ -52,3 +52,11 @@ class RemoveResponse(BaseModel):
 
 class StatusResponse(BaseModel):
     status: str
+
+
+class TransformRequest(BaseModel):
+    X: List[str]
+
+
+class TransformResponse(BaseModel):
+    X: List[str]

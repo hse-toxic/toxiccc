@@ -16,6 +16,7 @@ fit_api = 'fit'
 set_api = 'set'
 get_status_api = 'get_status'
 predict_api = 'predict'
+transform_api = 'transform'
 models_api = 'models'
 
 main_model_id = 'tfidf_logreg'
@@ -162,3 +163,21 @@ if uploaded_file is not None:
                 st.write(f'{response.json()[0]["message"]}')
 else:
     st.write("Пожалуйста, загрузите CSV-файл.")
+
+st.subheader("Преобразование токсичного комментария")
+toxic_text = st.text_input("Ваш токсичный текст", "")
+if toxic_text:
+    if st.button("иправить"):
+        payload = [
+            {
+                "X": [
+                    toxic_text
+                ]
+            }
+        ]
+        response = requests.post(url + transform_api, json=payload)
+        if response.status_code != 200:
+            st.write(f"Error: {repsonse.json()}")
+        else:
+            text = response.json()['X'][0]
+            st.write(f"После обработки: '{text}'")

@@ -29,6 +29,8 @@ def main():
     )
 
     caps_handler = CommandHandler('caps', handlers.caps)
+    detox_handler = CommandHandler('detox', handlers.detox)
+
 
     model_handler = CommandHandler('model', handlers.model)
     model_filter = f"^({Models.NAIVEBYAS.value}|{Models.TFIDF_LOGREG.value})$"
@@ -57,6 +59,7 @@ def main():
     application.add_handler(menu_handler)
     application.add_handler(menu_button_callback_handler)
     application.add_handler(caps_handler)
+    application.add_handler(detox_handler)
     application.add_handler(echo_handler)
     application.add_handler(inline_echo_handler)
     application.add_handler(unknown_handler)

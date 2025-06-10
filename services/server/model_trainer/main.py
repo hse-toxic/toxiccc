@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 import logging
 
 from app.app import load_models
-from transformers import VectorizeTransformer, TfidfVectorizeTransformer
+from text_transformers import VectorizeTransformer, TfidfVectorizeTransformer
 
 
 load_models()

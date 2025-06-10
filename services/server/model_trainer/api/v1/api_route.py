@@ -1,13 +1,15 @@
-from app.app import fit_impl, set_impl, get_status_impl, predict_impl
+from app.app import fit_impl, set_impl, get_status_impl, predict_impl, transform_impl
 from app.app import list_models_impl
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from typing import List
 
-from .api_models import ModelConfig, FitRequest, FitResponse, ModelListResponse
-from .api_models import SetRequest, SetResponse, PredictRequest
-from .api_models import PredictionResponse, StatusResponse
+from .api_models import ModelConfig, ModelListResponse, StatusResponse
+from .api_models import FitRequest, FitResponse
+from .api_models import SetRequest, SetResponse
+from .api_models import PredictRequest, PredictionResponse
+from .api_models import TransformRequest, TransformResponse
 
 import sys
 sys.path.append('../../')
@@ -54,3 +56,10 @@ async def list_models():
     # Реализуйте получения списка обученных моделей
     result = await list_models_impl()
     return JSONResponse(content=[result[1]], status_code=result[0])
+
+
+@router.post("/transform", response_model=TransformResponse)
+async def transform(request: List[TransformRequest]):
+    # Реализуйте инференс одной из загруженных моделей
+    result = await transform_impl(request[0])
+    return JSONResponse(content=result[1], status_code=result[0])
